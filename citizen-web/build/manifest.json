@@ -1,0 +1,217 @@
+{
+  "name": "Civic Issue Reporter",
+  "short_name": "Civic Issues",
+  "description": "Report civic issues like potholes, streetlights, and waste management problems directly to your municipal authorities. Track progress and get updates on issue resolution.",
+  "version": "1.0.0",
+  "manifest_version": 2,
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#1976d2",
+  "background_color": "#ffffff",
+  "lang": "en-IN",
+  "dir": "ltr",
+  "categories": [
+    "government",
+    "utilities",
+    "productivity",
+    "social"
+  ],
+  "icons": [
+    {
+      "src": "icons/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/desktop-home.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "platform": "wide",
+      "label": "Home screen with issue categories and recent reports"
+    },
+    {
+      "src": "screenshots/mobile-report.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Report new issue with photo capture and location"
+    },
+    {
+      "src": "screenshots/mobile-track.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Track your reported issues with real-time status updates"
+    },
+    {
+      "src": "screenshots/mobile-map.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "platform": "narrow",
+      "label": "Interactive map showing nearby issues and municipal services"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Report Issue",
+      "short_name": "Report",
+      "description": "Quickly report a new civic issue",
+      "url": "/report",
+      "icons": [
+        {
+          "src": "icons/shortcut-report.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "My Issues",
+      "short_name": "My Issues",
+      "description": "View and track your reported issues",
+      "url": "/my-issues",
+      "icons": [
+        {
+          "src": "icons/shortcut-issues.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Nearby Issues",
+      "short_name": "Nearby",
+      "description": "Find issues reported near your location",
+      "url": "/nearby",
+      "icons": [
+        {
+          "src": "icons/shortcut-nearby.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Emergency",
+      "short_name": "Emergency",
+      "description": "Report emergency civic issues",
+      "url": "/report?priority=critical",
+      "icons": [
+        {
+          "src": "icons/shortcut-emergency.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "play",
+      "url": "https://play.google.com/store/apps/details?id=gov.in.civicissues",
+      "id": "gov.in.civicissues"
+    }
+  ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "handle_links": "preferred",
+  "capture_links": "new-client",
+  "protocol_handlers": [
+    {
+      "protocol": "web+civicissue",
+      "url": "/issue/%s"
+    }
+  ],
+  "file_handlers": [
+    {
+      "action": "/report",
+      "accept": {
+        "image/*": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+        "video/*": [".mp4", ".mov", ".avi"]
+      },
+      "launch_type": "single-client"
+    }
+  ],
+  "share_target": {
+    "action": "/report",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "description",
+      "url": "url",
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*", "video/*"]
+        }
+      ]
+    }
+  },
+  "permissions": [
+    "geolocation",
+    "camera",
+    "microphone",
+    "notifications",
+    "storage-access"
+  ],
+  "features": [
+    "Cross Platform",
+    "Fast",
+    "Simple"
+  ],
+  "iarc_rating_id": "e58c174a-81d2-5c3c-32cc-34b8de4a52e9",
+  "acquisition_utm_campaign": "civic-pwa-install"
+}
