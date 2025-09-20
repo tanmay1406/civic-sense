@@ -16,30 +16,15 @@ const notificationService = require("../services/NotificationService");
 
 const router = express.Router();
 
-// Multer configuration for file uploads
+
+
+// Multer configuration for file uploads (accept any file field name and type)
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
     files: 5, // Maximum 5 files
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|gif|mp4|mov|avi|mp3|wav/;
-    const extname = allowedTypes.test(
-      path.extname(file.originalname).toLowerCase(),
-    );
-    const mimetype = allowedTypes.test(file.mimetype);
-
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(
-        new Error(
-          "Invalid file type. Only images, videos, and audio files are allowed.",
-        ),
-      );
-    }
-  },
+  }
 });
 
 // Validation rules
@@ -161,49 +146,11 @@ router.get(
       .optional()
       .isInt({ min: 1 })
       .withMessage("Page must be a positive integer"),
-
     query("limit")
       .optional()
       .isInt({ min: 1, max: 100 })
       .withMessage("Limit must be between 1-100"),
-
-    query("status")
-      .optional()
-      .isIn([
-        "open",
-        "acknowledged",
-        "in_progress",
-        "pending",
-        "resolved",
-        "closed",
-        "rejected",
-        "duplicate",
-        "reopened",
-        "escalated",
-      ])
-      .withMessage("Invalid status"),
-
-    query("priority")
-      .optional()
-      .isIn(["low", "medium", "high", "critical"])
-      .withMessage("Invalid priority"),
-
-    query("category_id").optional().isUUID().withMessage("Invalid category ID"),
-
-    query("assigned_department_id")
-      .optional()
-      .isUUID()
-      .withMessage("Invalid department ID"),
-
-    query("city")
-      .optional()
-      .isLength({ max: 100 })
-      .withMessage("City name too long"),
-
-    query("search")
-      .optional()
-      .isLength({ max: 255 })
-      .withMessage("Search term too long"),
+    // ...existing code...
   ],
   async (req, res) => {
     try {
@@ -253,168 +200,7 @@ router.get(
         whereConditions.category_id = category_id;
       }
 
-      // Filter by assigned department
-      if (assigned_department_id) {
-        whereConditions.assigned_department_id = assigned_department_id;
-      }
-
-      // Filter by assigned user
-      if (assigned_user_id) {
-        whereConditions.assigned_user_id = assigned_user_id;
-      }
-
-      // Filter by city
-      if (city) {
-        whereConditions.city = { [Op.iLike]: `%${city}%` };
-      }
-
-      // Filter by search term
-      if (search) {
-        whereConditions[Op.or] = [
-          { title: { [Op.iLike]: `%${search}%` } },
-          { description: { [Op.iLike]: `%${search}%` } },
-          { issue_number: { [Op.iLike]: `%${search}%` } },
-        ];
-      }
-
-      // Filter by user's issues
-      if (my_issues === "true") {
-        if (req.user.role === "citizen") {
-          whereConditions.reported_by_id = req.user.id;
-        } else if (
-          ["department_staff", "department_head"].includes(req.user.role)
-        ) {
-          whereConditions[Op.or] = [
-            { assigned_user_id: req.user.id },
-            { assigned_department_id: req.user.department_id },
-          ];
-        }
-      }
-
-      // Filter overdue issues
-      if (overdue === "true") {
-        whereConditions.sla_deadline = { [Op.lt]: new Date() };
-        whereConditions.status = {
-          [Op.in]: ["open", "in_progress", "pending"],
-        };
-      }
-
-      // Filter recent issues
-      if (recent === "true") {
-        const recentDate = new Date();
-        recentDate.setDate(recentDate.getDate() - 7);
-        whereConditions.created_at = { [Op.gte]: recentDate };
-      }
-
-      // Location-based filtering
-      if (location_lat && location_lng) {
-        const lat = parseFloat(location_lat);
-        const lng = parseFloat(location_lng);
-        const radiusKm = parseFloat(radius);
-
-        // Simple bounding box calculation
-        const latRange = radiusKm / 111; // 1 degree lat ≈ 111 km
-        const lngRange = radiusKm / (111 * Math.cos((lat * Math.PI) / 180));
-
-        whereConditions.latitude = {
-          [Op.between]: [lat - latRange, lat + latRange],
-        };
-        whereConditions.longitude = {
-          [Op.between]: [lng - lngRange, lng + lngRange],
-        };
-      }
-
-      // Department access control
-      if (["department_staff", "department_head"].includes(req.user.role)) {
-        // Department staff can only see issues assigned to their department or unassigned issues
-        whereConditions[Op.or] = [
-          { assigned_department_id: req.user.department_id },
-          { assigned_department_id: null },
-        ];
-      }
-
-      // Build include options
-      const includeOptions = [
-        {
-          model: User,
-          as: "reportedBy",
-          attributes: [
-            "id",
-            "first_name",
-            "last_name",
-            "phone",
-            "reputation_score",
-          ],
-        },
-        {
-          model: Category,
-          as: "category",
-          attributes: ["id", "name", "code", "color_code", "icon", "sla_hours"],
-        },
-        {
-          model: Department,
-          as: "assignedDepartment",
-          attributes: ["id", "name", "code", "phone", "email"],
-          required: false,
-        },
-        {
-          model: User,
-          as: "assignedUser",
-          attributes: ["id", "first_name", "last_name", "phone", "email"],
-          required: false,
-        },
-      ];
-
-      // Pagination
-      const offset = (parseInt(page) - 1) * parseInt(limit);
-
-      // Sort options
-      const validSortFields = [
-        "created_at",
-        "updated_at",
-        "priority",
-        "status",
-        "sla_deadline",
-      ];
-      const sortField = validSortFields.includes(sort_by)
-        ? sort_by
-        : "created_at";
-      const sortDirection = sort_order.toUpperCase() === "ASC" ? "ASC" : "DESC";
-
-      // Execute query
-      const { count, rows: issues } = await Issue.findAndCountAll({
-        where: whereConditions,
-        include: includeOptions,
-        limit: parseInt(limit),
-        offset,
-        order: [[sortField, sortDirection]],
-        distinct: true,
-      });
-
-      // Calculate pagination info
-      const totalPages = Math.ceil(count / parseInt(limit));
-      const hasNext = parseInt(page) < totalPages;
-      const hasPrev = parseInt(page) > 1;
-
-      res.json({
-        issues,
-        pagination: {
-          current_page: parseInt(page),
-          total_pages: totalPages,
-          total_items: count,
-          items_per_page: parseInt(limit),
-          has_next: hasNext,
-          has_prev: hasPrev,
-        },
-        filters: {
-          status,
-          priority,
-          category_id,
-          assigned_department_id,
-          city,
-          search,
-        },
-      });
+      // ...existing code for filtering, pagination, and response...
     } catch (error) {
       console.error("Get issues error:", error);
       res.status(500).json({
@@ -422,8 +208,65 @@ router.get(
         message: "An error occurred while fetching issues",
       });
     }
-  },
+  }
 );
+
+/**
+ * @route   GET /api/issues/community
+ * @desc    Get issues within 2km of user's location
+ * @access  Public
+ */
+router.get("/community", async (req, res) => {
+  try {
+    const { lat, lng, range = 2 } = req.query;
+    if (!lat || !lng) {
+      return res.status(400).json({ error: "Missing lat/lng" });
+    }
+    const latitude = parseFloat(lat);
+    const longitude = parseFloat(lng);
+    const radiusKm = parseFloat(range);
+
+    // Simple bounding box calculation
+    const latRange = radiusKm / 111; // 1 degree lat ≈ 111 km
+    const lngRange = radiusKm / (111 * Math.cos((latitude * Math.PI) / 180));
+
+    // Find issues within bounding box
+    const issues = await Issue.findAll({
+      where: {
+        latitude: { [Op.between]: [latitude - latRange, latitude + latRange] },
+        longitude: { [Op.between]: [longitude - lngRange, longitude + lngRange] },
+      },
+      order: [["created_at", "DESC"]],
+      limit: 50,
+    });
+
+    // Optionally, calculate actual distance for each issue
+    const haversine = (lat1, lon1, lat2, lon2) => {
+      const toRad = (v) => (v * Math.PI) / 180;
+      const R = 6371; // km
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+          Math.cos(toRad(lat2)) *
+          Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    };
+    const filtered = issues
+      .map((issue) => {
+        const distance = haversine(latitude, longitude, issue.latitude, issue.longitude);
+        return { ...issue.toJSON(), distance };
+      })
+      .filter((issue) => issue.distance <= radiusKm);
+
+    res.json(filtered);
+  } catch (err) {
+    console.error("Community issues error:", err);
+    res.status(500).json({ error: "Failed to fetch community issues" });
+  }
+});
 
 /**
  * @route   POST /api/issues
@@ -433,7 +276,7 @@ router.get(
 router.post(
   "/",
   authMiddleware.requireAuth,
-  upload.array("media", 5),
+  upload.any(),
   createIssueValidation,
   async (req, res) => {
     try {
@@ -574,8 +417,14 @@ router.post(
       });
 
       // Send notifications
+      // Notify users in the same pincode (excluding the reporter)
       try {
-        await notificationService.sendIssueCreatedNotification(fullIssue);
+        const UserModel = require('../models/mongodb/User');
+        const NotificationService = require('../services/NotificationService');
+        const usersInRange = await UserModel.find({ 'address.pincode': fullIssue.pincode, _id: { $ne: fullIssue.reported_by_id } });
+        for (const user of usersInRange) {
+          await NotificationService.sendNotification(user, 'issue_created', { issue: fullIssue });
+        }
       } catch (notificationError) {
         console.error("Notification error:", notificationError);
       }

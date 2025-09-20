@@ -58,8 +58,10 @@ const verifyToken = (token) => {
 const requireAuth = async (req, res, next) => {
   try {
     const token = extractToken(req);
+    console.log('Auth Debug: Extracted token:', token);
 
     if (!token) {
+      console.error('Auth Debug: No token provided');
       return res.status(401).json({
         error: 'Authentication required',
         message: 'No token provided'
@@ -67,18 +69,22 @@ const requireAuth = async (req, res, next) => {
     }
 
     // Verify token
-    const decoded = verifyToken(token);
+    let decoded;
+    try {
+      decoded = verifyToken(token);
+      console.log('Auth Debug: Decoded token:', decoded);
+    } catch (verifyErr) {
+      console.error('Auth Debug: Token verification failed:', verifyErr);
+      throw verifyErr;
+    }
 
-    // Find user in database
-    const user = await User.scope('public').findByPk(decoded.id, {
-      include: [{
-        model: Department,
-        as: 'department',
-        attributes: ['id', 'name', 'code', 'is_active']
-      }]
-    });
+    // Find user in MongoDB (Mongoose)
+    const UserModel = require('../models/mongodb/User');
+    const user = await UserModel.findById(decoded.id);
+    console.log('Auth Debug: User lookup result:', user);
 
     if (!user) {
+      console.error('Auth Debug: User not found for id:', decoded.id);
       return res.status(401).json({
         error: 'Authentication failed',
         message: 'User not found'
@@ -86,7 +92,8 @@ const requireAuth = async (req, res, next) => {
     }
 
     // Check if user is active
-    if (!user.is_active) {
+    if (user.isActive === false) {
+      console.error('Auth Debug: User is not active:', user._id);
       return res.status(401).json({
         error: 'Account deactivated',
         message: 'Your account has been deactivated'
@@ -94,15 +101,17 @@ const requireAuth = async (req, res, next) => {
     }
 
     // Check if user is blocked
-    if (user.is_blocked) {
+    if (user.isBlocked === true) {
+      console.error('Auth Debug: User is blocked:', user._id);
       return res.status(401).json({
         error: 'Account blocked',
-        message: user.blocked_reason || 'Your account has been blocked'
+        message: user.blockedReason || 'Your account has been blocked'
       });
     }
 
     // Check token version for logout functionality
-    if (decoded.version !== undefined && decoded.version < user.token_version) {
+    if (decoded.version !== undefined && decoded.version < user.tokenVersion) {
+      console.error('Auth Debug: Token version invalidated:', decoded.version, user.tokenVersion);
       return res.status(401).json({
         error: 'Token invalidated',
         message: 'Please login again'
@@ -110,10 +119,10 @@ const requireAuth = async (req, res, next) => {
     }
 
     // Update last login info
-    user.last_login_at = new Date();
-    user.last_login_ip = req.ip;
-    user.login_attempts = 0; // Reset failed attempts on successful auth
-    await user.save({ hooks: false });
+    user.lastLoginAt = new Date();
+    user.lastLoginIP = req.ip;
+    user.loginAttempts = 0; // Reset failed attempts on successful auth
+    await user.save();
 
     // Attach user to request object
     req.user = user;
@@ -121,7 +130,7 @@ const requireAuth = async (req, res, next) => {
 
     next();
   } catch (error) {
-    console.error('Authentication error:', error);
+    console.error('Authentication error:', error.name, error.message, error.stack);
 
     if (error.message.includes('expired')) {
       return res.status(401).json({
@@ -139,7 +148,8 @@ const requireAuth = async (req, res, next) => {
 
     return res.status(500).json({
       error: 'Authentication error',
-      message: 'Internal server error during authentication'
+      message: 'Internal server error during authentication',
+      debug: error.message
     });
   }
 };
@@ -160,17 +170,12 @@ const optionalAuth = async (req, res, next) => {
     const decoded = verifyToken(token);
 
     // Find user in database
-    const user = await User.scope('public').findByPk(decoded.id, {
-      include: [{
-        model: Department,
-        as: 'department',
-        attributes: ['id', 'name', 'code', 'is_active']
-      }]
-    });
+  const UserModel = require('../models/mongodb/User');
+  const user = await UserModel.findById(decoded.id);
 
-    if (user && user.is_active && !user.is_blocked) {
+    if (user && user.isActive && !user.isBlocked) {
       // Check token version
-      if (decoded.version === undefined || decoded.version >= user.token_version) {
+      if (decoded.version === undefined || decoded.version >= user.tokenVersion) {
         req.user = user;
         req.token = token;
       }
@@ -257,26 +262,20 @@ const requireOwnership = (resourceUserIdField = 'reported_by_id') => {
 
     try {
       // Check if resource exists and user owns it
-      const resourceId = req.params.id;
-      if (!resourceId) {
+      const resourceUserId = req.body[resourceUserIdField] || req.params[resourceUserIdField];
+      if (!resourceUserId) {
         return res.status(400).json({
           error: 'Invalid request',
-          message: 'Resource ID is required'
+          message: 'Resource user ID is required'
         });
       }
-
-      // This would need to be adapted based on the specific resource model
-      // For now, we'll check if the resource user ID matches the current user
-      if (req.resource && req.resource[resourceUserIdField]) {
-        if (req.resource[resourceUserIdField] === req.user.id) {
-          return next();
-        }
+      if (resourceUserId !== String(req.user._id)) {
+        return res.status(403).json({
+          error: 'Access denied',
+          message: 'You can only access your own resources'
+        });
       }
-
-      return res.status(403).json({
-        error: 'Access denied',
-        message: 'You can only access your own resources'
-      });
+      next();
     } catch (error) {
       console.error('Ownership check error:', error);
       return res.status(500).json({

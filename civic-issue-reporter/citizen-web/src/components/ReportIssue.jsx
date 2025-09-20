@@ -332,7 +332,17 @@ const ReportIssue = () => {
     setSuccess(false);
 
     const formData = new FormData();
-    formData.append("category", category);
+    // Find the selected category object to get its id
+    const selectedCategory = categories.find(
+      (cat) => cat.name === category || cat._id === category || cat.id === category
+    );
+    if (selectedCategory && (selectedCategory.id || selectedCategory._id)) {
+      formData.append("category_id", selectedCategory.id || selectedCategory._id);
+    } else {
+      setError("Please select a valid category.");
+      setLoading(false);
+      return;
+    }
     formData.append("title", title);
     formData.append("description", description);
     formData.append("priority", priority);

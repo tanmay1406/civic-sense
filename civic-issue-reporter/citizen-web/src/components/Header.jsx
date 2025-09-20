@@ -93,6 +93,12 @@ const Header = () => {
       icon: <ListIcon />,
       description: "View your reported issues",
     },
+    {
+      label: "Community",
+      path: "/community",
+      icon: <LocationOn />,
+      description: "See issues near you",
+    },
   ];
 
   const handleProfileMenuOpen = (event) => {

@@ -62,11 +62,7 @@ const ConnectionStatus = () => {
 
   useEffect(() => {
     checkConnection();
-
-    // Check connection every 30 seconds
-    const interval = setInterval(checkConnection, 30000);
-
-    return () => clearInterval(interval);
+    // Removed interval polling, only check once on mount
   }, []);
 
   const getStatusConfig = () => {

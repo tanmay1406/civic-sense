@@ -555,6 +555,18 @@ const MyIssues = () => {
                       >
                         Track Progress
                       </Button>
+                      <Button
+                        size="small"
+                        variant={issue.hasVoted ? "contained" : "outlined"}
+                        color={issue.hasVoted ? "success" : "primary"}
+                        disabled={issue.hasVoted}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          // TODO: Call vote API and update UI
+                        }}
+                      >
+                        {issue.hasVoted ? "Voted" : "Vote"} ({issue.votes || 0})
+                      </Button>
                     </CardActions>
                   </Card>
                 </Fade>

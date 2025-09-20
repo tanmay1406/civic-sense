@@ -77,7 +77,6 @@ const issueSchema = new mongoose.Schema({
   media: [{
     type: {
       type: String,
-      enum: ['image', 'video', 'audio', 'document'],
       required: true
     },
     url: {
@@ -90,6 +89,10 @@ const issueSchema = new mongoose.Schema({
     uploadedAt: {
       type: Date,
       default: Date.now
+    },
+    fileType: {
+      type: String,
+      required: false
     }
   }],
   voiceNote: {

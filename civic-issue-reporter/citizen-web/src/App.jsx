@@ -26,6 +26,9 @@ import EmailVerification from "./components/EmailVerification";
 import ErrorBoundary from "./components/ErrorBoundary";
 import NotFound from "./components/NotFound";
 
+import Community from "./pages/Community";
+import { Suspense } from "react";
+
 const App = () => {
   return (
     <Provider store={store}>
@@ -71,6 +74,7 @@ const App = () => {
                         </ProtectedRoute>
                       }
                     />
+                    <Route path="/community" element={<Suspense fallback={<div>Loading...</div>}><Community /></Suspense>} />
                     <Route path="/auth" element={<AuthSelection />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />

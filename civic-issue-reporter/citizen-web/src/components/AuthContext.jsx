@@ -235,8 +235,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       const registrationData = {
-        first_name: firstName,
-        last_name: lastName,
+        firstName,
+        lastName,
         email,
         password,
         phone: formattedPhone,
