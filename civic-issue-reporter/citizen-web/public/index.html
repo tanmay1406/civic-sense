@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="theme-color" content="#1976d2" />
+    <meta name="msapplication-TileColor" content="#1976d2" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Civic Issues" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- SEO Meta Tags -->
+    <title>Civic Issue Reporter - Report Municipal Issues</title>
+    <meta name="description" content="Report civic issues like potholes, streetlights, waste management problems directly to your municipal authorities. Track progress and get updates on issue resolution." />
+    <meta name="keywords" content="civic issues, municipal problems, pothole reporting, streetlight repair, waste management, citizen services, municipal governance, smart city" />
+    <meta name="author" content="Civic Issue Reporter Team" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://civicissues.gov.in/" />
+    <meta property="og:title" content="Civic Issue Reporter - Report Municipal Issues" />
+    <meta property="og:description" content="Report civic issues like potholes, streetlights, waste management problems directly to your municipal authorities. Track progress and get updates on issue resolution." />
+    <meta property="og:image" content="%PUBLIC_URL%/og-image.png" />
+    <meta property="og:site_name" content="Civic Issue Reporter" />
+    <meta property="og:locale" content="en_IN" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://civicissues.gov.in/" />
+    <meta property="twitter:title" content="Civic Issue Reporter - Report Municipal Issues" />
+    <meta property="twitter:description" content="Report civic issues like potholes, streetlights, waste management problems directly to your municipal authorities." />
+    <meta property="twitter:image" content="%PUBLIC_URL%/twitter-image.png" />
+    <meta property="twitter:creator" content="@CivicIssueApp" />
+
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/x-icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="%PUBLIC_URL%/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="%PUBLIC_URL%/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="%PUBLIC_URL%/apple-touch-icon.png" />
+    <link rel="mask-icon" href="%PUBLIC_URL%/safari-pinned-tab.svg" color="#1976d2" />
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.cloudinary.com" />
+    <link rel="preconnect" href="https://res.cloudinary.com" />
+
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Material Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+
+    <!-- Leaflet CSS for Maps -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+
+    <!-- Security Headers -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+    <!-- Performance Hints -->
+    <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+    <link rel="dns-prefetch" href="//api.cloudinary.com" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Civic Issue Reporter",
+      "description": "Report civic issues like potholes, streetlights, waste management problems directly to your municipal authorities",
+      "url": "https://civicissues.gov.in",
+      "applicationCategory": "GovernmentApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "INR"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Municipal Corporation",
+        "url": "https://civicissues.gov.in"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Government of India",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://civicissues.gov.in/logo.png"
+        }
+      }
+    }
+    </script>
+
+    <style>
+      /* Critical CSS - Above the fold styles */
+      body {
+        margin: 0;
+        font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen',
+          'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        background-color: #f5f5f5;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      /* Loading spinner */
+      .loading-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+        color: white;
+        text-align: center;
+        flex-direction: column;
+      }
+
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: #fff;
+        animation: spin 1s ease-in-out infinite;
+        margin-bottom: 20px;
+      }
+
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+
+      .loading-text {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-bottom: 10px;
+      }
+
+      .loading-subtext {
+        font-size: 0.9rem;
+        opacity: 0.8;
+        max-width: 300px;
+        line-height: 1.4;
+      }
+
+      /* Error fallback styles */
+      .error-boundary {
+        padding: 20px;
+        text-align: center;
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin: 20px;
+      }
+
+      .error-boundary h2 {
+        color: #d32f2f;
+        margin-bottom: 16px;
+      }
+
+      .error-boundary p {
+        color: #666;
+        margin-bottom: 20px;
+      }
+
+      .retry-button {
+        background: #1976d2;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background-color 0.2s;
+      }
+
+      .retry-button:hover {
+        background: #1565c0;
+      }
+
+      /* Accessibility improvements */
+      .visually-hidden {
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
+
+      /* High contrast mode support */
+      @media (prefers-contrast: high) {
+        body {
+          background-color: #fff;
+          color: #000;
+        }
+      }
+
+      /* Reduce motion for users who prefer it */
+      @media (prefers-reduced-motion: reduce) {
+        .loading-spinner {
+          animation: none;
+        }
+
+        * {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <noscript>
+      <div class="error-boundary">
+        <h2>JavaScript Required</h2>
+        <p>This application requires JavaScript to run. Please enable JavaScript in your browser and reload the page.</p>
+        <p>If you're using a screen reader, this application is fully accessible with JavaScript enabled.</p>
+      </div>
+    </noscript>
+
+    <!-- Skip to main content link for accessibility -->
+    <a href="#main-content" class="visually-hidden">Skip to main content</a>
+
+    <!-- Loading screen -->
+    <div id="loading-screen" class="loading-container">
+      <div class="loading-spinner" role="progressbar" aria-label="Loading application"></div>
+      <div class="loading-text">Civic Issue Reporter</div>
+      <div class="loading-subtext">
+        Loading your civic engagement platform...
+      </div>
+    </div>
+
+    <!-- React app root -->
+    <div id="root" role="main" aria-label="Civic Issue Reporter Application"></div>
+
+    <!-- Fallback error boundary -->
+    <div id="error-fallback" class="error-boundary" style="display: none;">
+      <h2>Something went wrong</h2>
+      <p>We're sorry, but something went wrong. Please try refreshing the page.</p>
+      <button class="retry-button" onclick="window.location.reload()">
+        Refresh Page
+      </button>
+    </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+      // Remove loading screen once React app loads
+      window.addEventListener('DOMContentLoaded', function() {
+        setTimeout(function() {
+          const loadingScreen = document.getElementById('loading-screen');
+          if (loadingScreen) {
+            loadingScreen.style.display = 'none';
+          }
+        }, 2000);
+      });
+
+      // Global error handler
+      window.addEventListener('error', function(e) {
+        console.error('Global error:', e.error);
+        const loadingScreen = document.getElementById('loading-screen');
+        const errorFallback = document.getElementById('error-fallback');
+
+        if (loadingScreen) {
+          loadingScreen.style.display = 'none';
+        }
+        if (errorFallback) {
+          errorFallback.style.display = 'block';
+        }
+      });
+
+      // Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('%PUBLIC_URL%/service-worker.js')
+            .then(function(registration) {
+              console.log('SW registered: ', registration);
+            })
+            .catch(function(registrationError) {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+
+      // Install prompt for PWA
+      let deferredPrompt;
+      window.addEventListener('beforeinstallprompt', function(e) {
+        e.preventDefault();
+        deferredPrompt = e;
+
+        // Show install button if needed
+        const installButton = document.getElementById('install-app-button');
+        if (installButton) {
+          installButton.style.display = 'block';
+          installButton.addEventListener('click', function() {
+            if (deferredPrompt) {
+              deferredPrompt.prompt();
+              deferredPrompt.userChoice.then(function(choiceResult) {
+                if (choiceResult.outcome === 'accepted') {
+                  console.log('User accepted the install prompt');
+                } else {
+                  console.log('User dismissed the install prompt');
+                }
+                deferredPrompt = null;
+              });
+            }
+          });
+        }
+      });
+
+      // Track app installation
+      window.addEventListener('appinstalled', function(evt) {
+        console.log('App was installed', evt);
+        // Track with analytics if available
+        if (window.gtag) {
+          gtag('event', 'app_installed', {
+            'event_category': 'PWA',
+            'event_label': 'Civic Issue Reporter'
+          });
+        }
+      });
+
+      // Network status handling
+      window.addEventListener('online', function() {
+        console.log('Network: Online');
+        document.body.classList.remove('offline');
+      });
+
+      window.addEventListener('offline', function() {
+        console.log('Network: Offline');
+        document.body.classList.add('offline');
+      });
+
+      // Performance monitoring
+      if ('performance' in window) {
+        window.addEventListener('load', function() {
+          setTimeout(function() {
+            const perfData = window.performance.timing;
+            const pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+            console.log('Page load time:', pageLoadTime + 'ms');
+
+            // Send to analytics if available
+            if (window.gtag && pageLoadTime > 0) {
+              gtag('event', 'timing_complete', {
+                'name': 'page_load',
+                'value': pageLoadTime
+              });
+            }
+          }, 0);
+        });
+      }
+    </script>
+
+    <!-- Google Analytics (replace with your tracking ID) -->
+    <!-- Uncomment when you have a Google Analytics tracking ID
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID', {
+        'send_page_view': false
+      });
+    </script>
+    -->
+  </body>
+</html>
