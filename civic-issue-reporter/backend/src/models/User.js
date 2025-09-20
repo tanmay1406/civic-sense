@@ -219,6 +219,12 @@ User.init({
     unique: true,
     validate: {
       len: { args: [3, 50], msg: 'Employee ID must be between 3-50 characters' }
+        ,
+        isRequiredForStaff(value) {
+          if ((this.role !== 'citizen') && (!value || value === '')) {
+            throw new Error('Employee ID is required for staff, admin, and department roles');
+          }
+        }
     }
   },
 
